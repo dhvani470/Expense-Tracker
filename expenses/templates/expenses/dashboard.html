@@ -1,0 +1,220 @@
+{% extends 'expenses/base.html' %}
+
+{% block title %}Dashboard | Expense Tracker{% endblock %}
+
+{% block content %}
+
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div>
+        <h2 class="fw-bold mb-1">Expense Dashboard</h2>
+        <p class="text-muted mb-0">
+            Welcome, {{ user.username }}! Here's your spending overview.
+        </p>
+    </div>
+
+    <a href="{% url 'add_expense' %}" class="btn btn-primary">
+        + Add Expense
+    </a>
+</div>
+
+<!-- Summary cards -->
+<div class="row g-3 mb-4">
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <p class="text-muted mb-2">Total for filtered expenses</p>
+                <h3 class="fw-bold mb-0">
+                    ₹{{ total_spent|default:0|floatformat:2 }}
+                </h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <p class="text-muted mb-2">Spent this month</p>
+                <h3 class="fw-bold mb-0">
+                    ₹{{ monthly_spent|default:0|floatformat:2 }}
+                </h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Expense filters -->
+{% if has_any_expenses %}
+<div class="card mb-4">
+    <div class="card-body py-3">
+        <form method="get" class="row g-2 align-items-end" id="expenseFilterForm">
+
+            <div class="col-md-5">
+                <label for="search" class="form-label small">Search expenses</label>
+                <input
+                    type="text"
+                    id="search"
+                    name="search"
+                    class="form-control"
+                    value="{{ search }}"
+                    placeholder="Search by description..."
+                >
+            </div>
+
+            <div class="col-md-3">
+                <label for="category" class="form-label small">Category</label>
+                <select id="category" name="category" class="form-select">
+                    <option value="">All categories</option>
+                    {% for category in categories %}
+                        <option value="{{ category.id }}" {% if selected_category == category.id|stringformat:"s" %}selected{% endif %}>
+                            {{ category.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-md-2">
+                <label for="payment_method" class="form-label small">Payment</label>
+                <select id="payment_method" name="payment_method" class="form-select">
+                    <option value="">All methods</option>
+                    {% for value, label in payment_methods %}
+                        <option value="{{ value }}" {% if selected_payment_method == value %}selected{% endif %}>
+                            {{ label }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-primary flex-grow-1">
+                    Search
+                </button>
+                <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">
+                    Clear
+                </a>
+            </div>
+
+            <div class="col-12">
+                <details class="mt-2">
+                    <summary class="small text-muted" style="cursor: pointer;">
+                        Advanced filters · Date range
+                    </summary>
+
+                    <div class="row g-3 mt-1">
+                        <div class="col-md-4">
+                            <label for="start_date" class="form-label small">From date</label>
+                            <input
+                                type="date"
+                                id="start_date"
+                                name="start_date"
+                                class="form-control"
+                                value="{{ start_date }}"
+                            >
+                        </div>
+
+                        <div class="col-md-4">
+                            <label for="end_date" class="form-label small">To date</label>
+                            <input
+                                type="date"
+                                id="end_date"
+                                name="end_date"
+                                class="form-control"
+                                value="{{ end_date }}"
+                            >
+                        </div>
+                    </div>
+                </details>
+            </div>
+
+        </form>
+    </div>
+</div>
+{% endif %}
+
+<!-- Expense history -->
+<div class="card">
+    <div class="card-body">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+            <h5 class="fw-semibold mb-0">Expense History</h5>
+            <span class="text-muted small">
+                {{ expenses|length }} expense{{ expenses|length|pluralize }}
+            </span>
+        </div>
+
+        {% if has_any_expenses %}
+            {% if expenses %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Description</th>
+                                <th>Category</th>
+                                <th>Payment</th>
+                                <th class="text-end">Amount</th>
+                                <th class="text-center">Actions</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {% for expense in expenses %}
+                                <tr>
+                                    <td>{{ expense.date|date:"d M Y" }}</td>
+                                    <td>{{ expense.description }}</td>
+                                    <td>
+                                        <span class="badge text-bg-light border">
+                                            {{ expense.category.name }}
+                                        </span>
+                                    </td>
+                                    <td>{{ expense.payment_method }}</td>
+                                    <td class="text-end fw-semibold">
+                                        ₹{{ expense.amount|floatformat:2 }}
+                                    </td>
+                                    <td>
+                                        <div class="d-flex justify-content-center gap-2">
+                                            <a
+                                                href="{% url 'edit_expense' expense.id %}"
+                                                class="btn btn-sm btn-outline-primary"
+                                            >
+                                                Edit
+                                            </a>
+
+                                            <form
+                                                method="post"
+                                                action="{% url 'delete_expense' expense.id %}"
+                                                data-confirm="Are you sure you want to delete this expense?"
+                                            >
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-danger btn-sm">
+                                                    Delete
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <h6 class="fw-semibold">No matching expenses</h6>
+                    <p class="text-muted mb-0">
+                        Try changing your filters to see other expenses.
+                    </p>
+                </div>
+            {% endif %}
+        {% else %}
+            <div class="text-center py-5">
+                <h6 class="fw-semibold">No expenses yet</h6>
+                <p class="text-muted">
+                    Add your first expense to start tracking your spending.
+                </p>
+                <a href="{% url 'add_expense' %}" class="btn btn-primary">
+                    Add Expense
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

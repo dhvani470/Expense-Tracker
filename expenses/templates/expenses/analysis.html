@@ -1,0 +1,113 @@
+{% extends 'expenses/base.html' %}
+
+{% block title %}Spending Analysis | Expense Tracker{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h1 class="h2 mb-1">Pandas Spending Analysis</h1>
+    <p class="text-muted mb-0">
+        Get a summary of your spending patterns and expenses.
+    </p>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <p class="text-muted mb-2">Total Spending</p>
+                <h3 class="mb-0">₹{{ total_spent|floatformat:2 }}</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <p class="text-muted mb-2">Average Expense</p>
+                <h3 class="mb-0">₹{{ average_expense|floatformat:2 }}</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <p class="text-muted mb-2">Highest-Spending Category</p>
+                <h3 class="mb-0">{{ highest_category }}</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <h4 class="h5 mb-3">Category Summary</h4>
+
+                {% if category_summary %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Category</th>
+                                    <th class="text-end">Total (₹)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in category_summary %}
+                                    <tr>
+                                        <td>{{ item.category }}</td>
+                                        <td class="text-end">
+                                            {{ item.total|floatformat:2 }}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted mb-0">
+                        Add expenses to see the analysis.
+                    </p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <h4 class="h5 mb-3">Monthly Summary</h4>
+
+                {% if monthly_summary %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Month</th>
+                                    <th class="text-end">Total (₹)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in monthly_summary %}
+                                    <tr>
+                                        <td>{{ item.month }}</td>
+                                        <td class="text-end">
+                                            {{ item.total|floatformat:2 }}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted mb-0">
+                        No monthly data available yet.
+                    </p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

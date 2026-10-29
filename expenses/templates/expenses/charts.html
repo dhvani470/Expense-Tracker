@@ -1,0 +1,112 @@
+{% extends 'expenses/base.html' %}
+
+{% block title %}Spending Charts | Expense Tracker{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h1 class="h2 mb-1">Spending Analysis</h1>
+    <p class="text-muted mb-0">Explore your expenses by category and month.</p>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="mb-3">Spending by Category</h5>
+                <div style="position: relative; height: 320px;">
+                    <canvas id="categoryChart"></canvas>
+                </div>
+                <p id="categoryEmpty" class="text-muted mb-0" hidden>
+                    No expense data available yet.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="mb-3">Monthly Spending</h5>
+                <div style="position: relative; height: 320px;">
+                    <canvas id="monthlyChart"></canvas>
+                </div>
+                <p id="monthlyEmpty" class="text-muted mb-0" hidden>
+                    No expense data available yet.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{ category_labels|json_script:"category-labels" }}
+{{ category_totals|json_script:"category-totals" }}
+{{ month_labels|json_script:"month-labels" }}
+{{ monthly_totals|json_script:"monthly-totals" }}
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    const categoryLabels = JSON.parse(
+        document.getElementById('category-labels').textContent
+    );
+    const categoryTotals = JSON.parse(
+        document.getElementById('category-totals').textContent
+    );
+    const monthLabels = JSON.parse(
+        document.getElementById('month-labels').textContent
+    );
+    const monthlyTotals = JSON.parse(
+        document.getElementById('monthly-totals').textContent
+    );
+
+    if (categoryLabels.length > 0) {
+        new Chart(document.getElementById('categoryChart'), {
+            type: 'doughnut',
+            data: {
+                labels: categoryLabels,
+                datasets: [{
+                    data: categoryTotals
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom' }
+                }
+            }
+        });
+    } else {
+        document.getElementById('categoryChart').hidden = true;
+        document.getElementById('categoryEmpty').hidden = false;
+    }
+
+    if (monthLabels.length > 0) {
+        new Chart(document.getElementById('monthlyChart'), {
+            type: 'bar',
+            data: {
+                labels: monthLabels,
+                datasets: [{
+                    label: 'Spending (₹)',
+                    data: monthlyTotals
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    } else {
+        document.getElementById('monthlyChart').hidden = true;
+        document.getElementById('monthlyEmpty').hidden = false;
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,113 @@
+
+{% extends 'expenses/base.html' %}
+
+{% block title %}Monthly Budget | Expense Tracker{% endblock %}
+
+{% block content %}
+<div class="budget-page">
+
+    <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-4">
+        <div>
+            <h1 class="h2 mb-1">Monthly Budget</h1>
+            <p class="text-muted mb-0">{{ current_month }}</p>
+        </div>
+    </div>
+
+    <div class="row g-4">
+
+        <!-- Budget form -->
+        <div class="col-lg-5">
+            <div class="card h-100">
+                <div class="card-body p-4">
+                    <h5 class="mb-1">Set your budget</h5>
+                    <p class="text-muted small mb-4">
+                        Decide how much you want to spend this month.
+                    </p>
+
+                    <form method="post">
+                        {% csrf_token %}
+
+                        <label for="amount" class="form-label">
+                            Monthly budget (₹)
+                        </label>
+
+                        <input type="number"
+                               id="amount"
+                               name="amount"
+                               class="form-control mb-3"
+                               min="0.01"
+                               step="0.01"
+                               value="{{ budget.amount }}"
+                               required>
+
+                        <button type="submit" class="btn btn-primary w-100">
+                            Save Budget
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Budget summary -->
+        <div class="col-lg-7">
+            <div class="row g-3 h-100">
+
+                <div class="col-sm-6">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <p class="text-muted small mb-2">Monthly budget</p>
+                            <h3 class="mb-0">
+                                ₹{{ budget.amount|floatformat:2 }}
+                            </h3>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-sm-6">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <p class="text-muted small mb-2">Spent this month</p>
+                            <h3 class="mb-0">
+                                ₹{{ monthly_spent|floatformat:2 }}
+                            </h3>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <p class="text-muted small mb-2">Remaining balance</p>
+                            <h3 class="mb-0 {% if remaining < 0 %}text-danger{% else %}text-success{% endif %}">
+                                ₹{{ remaining|floatformat:2 }}
+                            </h3>
+
+                            {% if budget.amount > 0 %}
+                                {% if remaining < 0 %}
+                                    <p class="text-danger small mt-2 mb-0">
+                                        You've exceeded your budget by ₹{{ remaining|stringformat:"s"|slice:"1:" }}.
+                                    </p>
+                                {% elif remaining == 0 %}
+                                    <p class="text-warning small mt-2 mb-0">
+                                        You've used your entire monthly budget.
+                                    </p>
+                                {% else %}
+                                    <p class="text-muted small mt-2 mb-0">
+                                        You still have money available for this month.
+                                    </p>
+                                {% endif %}
+                            {% else %}
+                                <p class="text-muted small mt-2 mb-0">
+                                    Set a budget to track your remaining balance.
+                                </p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
