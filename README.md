@@ -203,6 +203,3 @@ Database migrations are managed using Django's migration system.
 
 This project was developed for educational purposes as part of an Open Source Technologies course.
 
-## Author
-
-**Dhvani Mangukiya**
